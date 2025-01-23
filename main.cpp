@@ -4,6 +4,7 @@
 
 #include "generator.h"
 #include "expression.h"
+#include "matrix.h"
 
 using namespace std;
 
@@ -14,11 +15,12 @@ using namespace std;
 
 
 int main(){
-    Generator g1(1, 1, 2, 4);
-    Generator g2(1, 1, 2, 4);
+    Matrix m(2, 3);
+    m.setElement(0, 0, 1);
+    m.setElement(0, 2, 1);
+    m.setElement(1, 1, 1);
 
-    Expression exp(2, 4);
-    exp = g1 + g2;
+    Matrix transposed_mat = m.transpose();
 
-    cout << exp.print() << endl;
+    cout << (m*transposed_mat).print() << endl;
 }
