@@ -13,8 +13,9 @@ protected:
     int v;
     int h;
 public:
-
+    Matrix();
     Matrix(int v, int h);
+    Matrix(const vector<vector<int> > &);
     int size_v();
     int size_h();
     int element(int i, int j);
@@ -25,6 +26,12 @@ public:
     Matrix operator*(const Matrix& mat);
 
     string print();
+
+    friend Matrix rref(const Matrix& mat);
+    friend Matrix nullSpace(const Matrix& mat);
 };
+
+Matrix rref(const Matrix& mat);
+Matrix nullSpace(const Matrix &mat);
 
 #endif

@@ -12,15 +12,23 @@ using namespace std;
 //  Stabilizer code [[n, k]] and its generator set <S1, S2, ..., Sn-k> 
 //  r
 
+void testMatrix(vector<vector<int> > input){
+    Matrix m(input);
+    Matrix rref_mat = rref(m);
+    Matrix null_space = nullSpace(rref_mat);
+    cout << "null space : \n"<< null_space.print() << endl;
+}
 
 
 int main(){
-    Matrix m(2, 3);
-    m.setElement(0, 0, 1);
-    m.setElement(0, 2, 1);
-    m.setElement(1, 1, 1);
-
-    Matrix transposed_mat = m.transpose();
-
-    cout << (m*transposed_mat).print() << endl;
+    testMatrix({{1, 1, 0, 1, 0, 0, 1},{1, 0, 1, 0, 1, 0, 1}, {0, 1, 1, 0, 0, 1, 1}});
+    testMatrix({{1, 0, 0}, {0, 1, 0}, {0, 0, 1}});
+    testMatrix({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}});
+    testMatrix({{1, 1, 1}});
+    testMatrix({{1, 0}, {0, 1}, {0, 0}});
+    testMatrix({{1, 0, 1}, {0, 1, 1}});
+    testMatrix({{1, 1, 0}, {0, 1, 1}, {1, 0, 1}});
+    testMatrix({{1, 0, 1}, {0, 1, 1}, {1, 1, 0}});
+    testMatrix({{1}, {0}, {1}});
+    testMatrix({{0}, {0}, {0}});
 }
