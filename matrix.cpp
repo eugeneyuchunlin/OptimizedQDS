@@ -37,18 +37,6 @@ Matrix::Matrix(int v, int h){
     }
 }
 
-int Matrix::element(int i, int j){
-    return mat[i][j];
-}
-
-int Matrix::size_v(){
-    return v;
-}
-
-int Matrix::size_h(){
-    return h;
-}
-
 Matrix Matrix::transpose(){
     Matrix m(h, v);
     for(int i = 0; i < m.v; ++i){
@@ -57,14 +45,6 @@ Matrix Matrix::transpose(){
         }
     }
     return m;
-}
-
-void Matrix::setElement(int i, int j, int val){
-    if(i >= v || j >= h){
-        throw std::out_of_range("Index out of range");
-    }else{
-        mat[i][j] = val;
-    }
 }
 
 string Matrix::print(){
@@ -133,6 +113,8 @@ Matrix rref(const Matrix& mat){
         }
     }
 
+
+    // backward elimination
     for(int i = mat.v - 1; i > 0; --i){
         // find the non-zero col in ith row
         int nzro_col = -1;
@@ -221,4 +203,20 @@ Matrix nullSpace(const Matrix& mat){
 
     Matrix result(nullspace);
     return result.transpose();
+}
+
+
+// incomplete function
+Matrix prioritizedGaussianElimination(const Matrix &mat){
+    Matrix m = rref(mat);    
+    int v = m.v;
+    int h = m.h;
+    
+    int rank = 0;
+    // calculate the rank
+    for(int i = 0; i < v; ++i){
+        if(mat.mat[i][i] !=0) ++rank;
+    } 
+
+    return m;
 }

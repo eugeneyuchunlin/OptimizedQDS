@@ -16,11 +16,22 @@ public:
     Matrix();
     Matrix(int v, int h);
     Matrix(const vector<vector<int> > &);
-    int size_v();
-    int size_h();
-    int element(int i, int j);
-
-    void setElement(int i, int j, int val);
+    inline int size_v() const{
+        return v;
+    }
+    inline int size_h() const{
+        return h;
+    }
+    inline int element(int i, int j) const{
+        return mat[i][j];
+    }
+    inline void setElement(int i, int j, int val){
+        if(i >= v || j >= h){
+            throw std::out_of_range("Index out of range");
+        }else{
+            mat[i][j] = val;
+        }
+    }
     
     Matrix transpose();
     Matrix operator*(const Matrix& mat);
@@ -29,9 +40,15 @@ public:
 
     friend Matrix rref(const Matrix& mat);
     friend Matrix nullSpace(const Matrix& mat);
+    friend vector<vector<int> > codewords(const Matrix &mat);
+    friend Matrix prioritizedGaussianElimination(const Matrix &mat);
+    friend int countingDepth(const Matrix &mat);
+    friend int correctionDepth(const Matrix &mat);
+    friend vector<int> degree(const Matrix &mat);
 };
 
 Matrix rref(const Matrix& mat);
 Matrix nullSpace(const Matrix &mat);
+Matrix prioritizedGaussianElimination(const Matrix &mat);
 
 #endif
