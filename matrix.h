@@ -36,7 +36,7 @@ public:
     Matrix transpose();
     Matrix operator*(const Matrix& mat);
 
-    string print();
+    string print() const;
 
     friend Matrix rref(const Matrix& mat);
     friend Matrix nullSpace(const Matrix& mat);

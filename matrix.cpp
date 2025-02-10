@@ -47,7 +47,7 @@ Matrix Matrix::transpose(){
     return m;
 }
 
-string Matrix::print(){
+string Matrix::print() const {
     string s;
     for(int i = 0; i < v; ++i){
         for(int j = 0; j < h; ++j){

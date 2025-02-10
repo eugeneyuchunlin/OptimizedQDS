@@ -6,6 +6,7 @@
 #include "expression.h"
 #include "matrix.h"
 #include "algorithm.h"
+#include "genetic.h"
 
 using namespace std;
 
@@ -38,26 +39,35 @@ int main(){
 
     // Matrix m({{1, 1, 0, 1, 0, 0, 1},{1, 0, 1, 0, 1, 0, 1}, {0, 1, 1, 0, 0, 1, 1}});
     // Matrix m({{1, 0, 0, 0, 1, 1, 0}, {0, 1, 0, 0, 1, 0, 1}, {0, 0, 1, 0, 0, 1, 1}, {0, 0, 0, 1, 1, 1, 1}});
-    Matrix m({{1, 0, 0}, {0, 1, 0}, {0, 0, 1}});
-    double sparsity_val = sparsity(m);
-    Matrix rref_mat = rref(m);
+    // Matrix m({{1, 0, 0}, {0, 1, 0}, {0, 0, 1}});
+    // double sparsity_val = sparsity(m);
+    // Matrix rref_mat = rref(m);
 
-    cout << "RREF: \n" << rref_mat.print() << endl;
+    // cout << "RREF: \n" << rref_mat.print() << endl;
 
-    double new_sparsity_val = sparsity(rref_mat);
-    cout << "Sparsity: " << sparsity_val << endl;
-    cout << "New Sparsity: " << new_sparsity_val << endl;
+    // double new_sparsity_val = sparsity(rref_mat);
+    // cout << "Sparsity: " << sparsity_val << endl;
+    // cout << "New Sparsity: " << new_sparsity_val << endl;
 
-    Matrix codewords_mat(codewords(m));
-    cout << "Codewords: \n" << codewords_mat.print() << endl;
+    // Matrix codewords_mat(codewords(m));
+    // cout << "Codewords: \n" << codewords_mat.print() << endl;
 
-    int minimum_d = minimumDistance(codewords(m));
-    cout << "minimum distance: " << minimum_d << endl;
+    // int minimum_d = minimumDistance(codewords(m));
+    // cout << "minimum distance: " << minimum_d << endl;
 
-    cout << "matrix: \n" << m.print() << endl;
-    cout << "couting depth: " << countingDepth(m) << endl;
-    cout << "correction depth: " << correctionDepth(m) << endl; 
+    // cout << "matrix: \n" << m.print() << endl;
+    // cout << "couting depth: " << countingDepth(m) << endl;
+    // cout << "correction depth: " << correctionDepth(m) << endl; 
     // cout << (sizeof(int) <<3) << endl;
 
+    srand(time(NULL));
+
+    GeneticAlgorithm ga(100, 10, 20, 0.8, 0.2, 0.2, 0.8);
+    ga.run(5000);
+
+    // Matrix pmat({{1, 0, 0, 1, 0, 1, 1}, {0, 1, 0, 1, 1, 0, 1}, {0, 0, 1, 0, 1, 1, 1}});
+    // Matrix pmat({{1, 1, 0}, {0, 1, 1}});
+    // int min_d = minimumDistance(pmat);
+    // cout << "min d: "<< min_d << endl;
     return 0;
 }
