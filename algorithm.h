@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <map>
 
 #include "matrix.h"
 #include "genetic.h"
@@ -36,6 +37,7 @@ public:
     static void mutation(const Chromosome &, Chromosome &);
 
     Chromosome & operator=(const Chromosome & other);
+    Matrix optimized_matrix;
 };
 
 class GeneticAlgorithm{
@@ -77,7 +79,7 @@ public:
         population.clear();
     }
 
-    Chromosome run(int iterations);
+    Chromosome run(int iterations, vector<map<string, string> > & iteration_data);
 };
 
 

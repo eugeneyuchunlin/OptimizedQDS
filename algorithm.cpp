@@ -2,6 +2,7 @@
 #include "matrix.h"
 #include "common.h"
 
+#include <map>
 #include <iostream>
 #include <vector>
 
@@ -158,6 +159,7 @@ Chromosome::Chromosome(const Chromosome & other): ChromosomeBase(other), h(other
     mat = new int*[other.v];
     v = other.v;
     for(int i = 0; i < v; ++i) mat[i] = genes + i*h;
+    matrix = Matrix(v, h);
 }
 
 Chromosome::Chromosome(int v, int h, Initializer init):
@@ -189,6 +191,7 @@ void Chromosome::updateMatrix(){
             matrix.setElement(i, j, mat[i][j]);
         }
     }
+    optimized_matrix = matrixOptimization(matrix);
 }
 
 double Chromosome::computeFitnessValue(){
@@ -201,11 +204,10 @@ double Chromosome::computeFitnessValue(){
     d = 40;
     fitness_val = 0;
     // fit += a*
-    Matrix optimizedMat = matrixOptimization(matrix);
     // Matrix optimizedMat = matrix;
-    fitness_val += b*countingDepth(optimizedMat);
-    fitness_val += r*correctionDepth(optimizedMat);
-    fitness_val += d*(1/log10(minimumDistance(optimizedMat) + 1e-10));
+    fitness_val += b*countingDepth(optimized_matrix);
+    fitness_val += r*correctionDepth(optimized_matrix);
+    fitness_val += d*(1/log10(minimumDistance(optimized_matrix) + 1e-10));
 
     return fitness_val;
 }
@@ -357,7 +359,7 @@ vector<Chromosome *> GeneticAlgorithm::mutation(){
         int p = random(0, current_pop_size);
 
         Chromosome * o = ready_to_use[i];
-        Chromosome::mutation(*population[p], *o);
+        ChromosomeBase::mutation(*population[p], *o);
         new_offspring.push_back(o); 
     }
 
@@ -445,13 +447,7 @@ vector<Chromosome *> GeneticAlgorithm::rouleteSelection(){
 }
 
 
-Chromosome GeneticAlgorithm::run(int iterations){
-
-    // for(int i = 0; i < pop_size; ++i){
-    //     double f_val = population[i]->computeFitnessValue();
-    //     cout << i << ":" << population[i]->fitnessValue() << endl;
-    // }
-
+Chromosome GeneticAlgorithm::run(int iterations, vector<map<string, string> > & iteration_data){
 
     for(int i = 0; i < iterations; ++i){
         // crossover
@@ -488,20 +484,21 @@ Chromosome GeneticAlgorithm::run(int iterations){
 
         // cout << "population size: "<< population.size() << endl;
         // cout << "available ofs: " << available_offspring.size()  << endl;
-        cout << i << ": " <<  elites[0]->fitnessValue() << endl;
-    }
-    Matrix original = population[0]->matrixForm();
-    Matrix matrix = matrixOptimization(original);
-    cout << "original:\n" << original.print() << endl;
-    cout << matrix.print() << endl;
-    cout << rref(matrix).print() << endl;
-    int distance = minimumDistance(matrix);
-    cout << "minimum distance : " << distance << endl;
-    cout << "counting depth: " << countingDepth(matrix)<< endl;
-    cout << "correction depth: " << correctionDepth(matrix) << endl;
+        // cout << i << "," <<  elites[0]->fitnessValue() 
+        //           << "," << countingDepth(elites[0]->optimized_matrix) 
+        //           << "," << correctionDepth(elites[0]->optimized_matrix)  
+        //           << "," << minimumDistance(elites[0]->optimized_matrix)<< endl;
+        cout << "iteration " << i << endl;
+        map<string, string> data = {
+            {"iteration", to_string(i)},
+            {"fitness value", to_string(elites[0]->fitnessValue())},
+            {"counting depth", to_string(countingDepth(elites[0]->optimized_matrix))},
+            {"correction depth", to_string(correctionDepth(elites[0]->optimized_matrix))},
+            {"minimum distance", to_string(minimumDistance(elites[0]->optimized_matrix))}
+        };
 
-    Matrix generator_matrix = nullSpace(rref(matrix));
-    cout << generator_matrix.print() << endl;
+        iteration_data.push_back(data);
+    }
     return *population[0];
 }
 

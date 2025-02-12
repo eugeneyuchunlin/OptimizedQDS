@@ -7,6 +7,7 @@
 #include "matrix.h"
 #include "algorithm.h"
 #include "genetic.h"
+#include "csv.h"
 
 using namespace std;
 
@@ -25,7 +26,7 @@ void testMatrix(vector<vector<int> > input){
 }
 
 
-int main(){
+int main(int argc, const char * argv[]){
     // testMatrix({{1, 1, 0, 1, 0, 0, 1},{1, 0, 1, 0, 1, 0, 1}, {0, 1, 1, 0, 0, 1, 1}});
     // testMatrix({{1, 0, 0}, {0, 1, 0}, {0, 0, 1}});
     // testMatrix({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}});
@@ -61,31 +62,27 @@ int main(){
     // cout << (sizeof(int) <<3) << endl;
 
     // srand(time(NULL));
+    if(argc < 3){
+        printf("Usage: [executable file] [v] [h]");
+        exit(-1);
+    }
 
-    GeneticAlgorithm ga(150, 7, 13, 0.8, 0.2, 0.2, 0.8);
-    ga.run(2000);
-    // Matrix pmat({{1, 0, 0, 0, 0, 1, 1}, {0, 0, 1, 0, 0, 0, 0}, {1, 1, 0, 0, 1, 0, 0}, {0, 1, 0, 1, 0, 0, 1}});
-    // Matrix pmat2 = matrixOptimization(pmat);
-    // int dist1 = minimumDistance(pmat);
-    // int dist2 = minimumDistance(pmat2);
-    // cout << "minimum distance1: " << dist1 << endl;
-    // cout << "minimum distance2: " << dist2 << endl;
+    vector<map<string, string> > iteration_data;
+    GeneticAlgorithm ga(150, atoi(argv[1]), atoi(argv[2]), 0.8, 0.2, 0.2, 0.8);
+    Chromosome best_result = ga.run(500, iteration_data);
 
-    // vector<vector<int> > codeword1 = codewords(nullSpace(rref(pmat)));
-    // vector<vector<int> > codeword2 = codewords(nullSpace(rref(pmat2)));
+    csv_t csv;
+    for(unsigned int i = 0; i < iteration_data.size(); ++i){
+        csv.addData(iteration_data[i]);
+    }
 
-    // Matrix cwd_mat1(codeword1);
-    // Matrix cwd_mat2(codeword2);
+    string filename = "output_" + string(argv[1]) + "_" + string(argv[2]) + ".csv";
+    csv.write(filename, "w");
 
-    // cout << cwd_mat1.print() << endl;
-    // cout << cwd_mat2.print() << endl;
-    
+    best_result.updateMatrix();
+    Matrix matrix(best_result.matrixForm());
 
-    // printf("countingDepth(p1, p2) = (%d, %d)\n", countingDepth(pmat), countingDepth(pmat2));
-    // printf("CorrectionDepth(p1, p2) = (%d, %d)\n", correctionDepth(pmat), correctionDepth(pmat2));
-
-    // cout << "pmat 1 : \n" << rref(pmat).print() << endl;
-    // cout << "pmat 2 : \n" << rref(pmat2).print() << endl;
-
+    cout << matrix.print() << endl;
+    cout << best_result.optimized_matrix.print() << endl;
     return 0;
 }
