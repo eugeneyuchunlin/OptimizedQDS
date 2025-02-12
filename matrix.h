@@ -45,10 +45,12 @@ public:
     friend int countingDepth(const Matrix &mat);
     friend int correctionDepth(const Matrix &mat);
     friend vector<int> degree(const Matrix &mat);
+    friend Matrix matrixOptimization(const Matrix &mat);
 };
 
 Matrix rref(const Matrix& mat);
 Matrix nullSpace(const Matrix &mat);
 Matrix prioritizedGaussianElimination(const Matrix &mat);
+Matrix matrixOptimization(const Matrix &mat);
 
 #endif

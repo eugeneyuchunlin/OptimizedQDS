@@ -47,9 +47,14 @@ ChromosomeBase::ChromosomeBase(const ChromosomeBase &other){
 }
 
 ChromosomeBase & ChromosomeBase::operator=(const ChromosomeBase & other){
-    if(this != &other){
-        copyFrom(other);
+    if(this->size != other.size){
+        if(this->genes != nullptr){
+            delete[] this->genes;
+        }
+        this->genes = new int[other.size];
+        this->size = other.size;
     }
+    memcpy(this->genes, other.genes, sizeof(int)*this->size);
     return *this;
 }
 

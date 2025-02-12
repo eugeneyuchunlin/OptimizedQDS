@@ -13,6 +13,8 @@ int minimumDistance(const vector<vector<int> > &codewords);
 int minimumDistance(const Matrix &parity_check_mat);
 
 class Chromosome : public ChromosomeBase{
+private:
+    static vector<int> twoDimensionCycleRand(int lb, int ub);
 protected:
     int ** mat;
     int v, h;
@@ -23,10 +25,17 @@ public:
     Chromosome():ChromosomeBase(), mat(nullptr), v(0), h(0){}
     Chromosome(int v, int h, Initializer init=RANDOM);
     Chromosome(const Chromosome &);
+
     virtual ~Chromosome();
     virtual double computeFitnessValue();
 
+    void updateMatrix();
     inline Matrix matrixForm(){return matrix;}
+
+    static void crossover(const Chromosome &, const Chromosome &, Chromosome &, Chromosome &);
+    static void mutation(const Chromosome &, Chromosome &);
+
+    Chromosome & operator=(const Chromosome & other);
 };
 
 class GeneticAlgorithm{

@@ -1,8 +1,10 @@
 #include <exception>
 #include <iostream>
 #include <set>
+#include <unordered_set>
 
 #include "matrix.h"
+#include "common.h"
 
 Matrix::Matrix():v(0), h(0){}
 
@@ -219,4 +221,53 @@ Matrix prioritizedGaussianElimination(const Matrix &mat){
     } 
 
     return m;
+}
+
+Matrix matrixOptimization(const Matrix & m) {
+    vector<int> removeRows, removeCols; // Store indices to be removed
+
+    // Identify rows with weight 1 and their corresponding column indices
+    for(int i = 0; i < m.v; ++i){
+        int one_index = -1;                  
+        int count = 0; 
+
+        for(int j = 0; j < m.h; ++j){
+            if(m.mat[i][j] == 1) {
+                count++;
+                one_index = j;
+            }
+        }
+
+        if(count == 1) {
+            removeRows.push_back(i);
+            removeCols.push_back(one_index);
+        }
+    }
+
+    // Remove columns by marking them
+    unordered_set<int> removeColSet(removeCols.begin(), removeCols.end());
+
+    // Create a new matrix without the selected rows and columns
+    Matrix newMatrix;
+    newMatrix.v = m.v - removeRows.size();
+    newMatrix.h = m.h - removeColSet.size();
+    newMatrix.mat.resize(newMatrix.v, vector<int>(newMatrix.h, 0));
+
+    int newRow = 0;
+    for(int i = 0; i < m.v; ++i) {
+        if(find(removeRows.begin(), removeRows.end(), i) != removeRows.end()) 
+            continue; // Skip rows marked for removal
+
+        int newCol = 0;
+        for(int j = 0; j < m.h; ++j) {
+            if(removeColSet.count(j)) 
+                continue; // Skip columns marked for removal
+
+            newMatrix.mat[newRow][newCol] = m.mat[i][j];
+            newCol++;
+        }
+        newRow++;
+    }
+
+    return newMatrix;
 }

@@ -61,13 +61,6 @@ vector<vector<int> > codewords(const Matrix &mat){
     return codewords;
 }
 
-int weight(const vector<int> codeword){
-    int result = 0;
-    for(unsigned int i = 0; i < codeword.size(); ++i){
-        result += codeword[i];
-    }
-    return result;
-}
 
 int minimumDistance(const vector<vector<int> > &codewords){
     int mini_d = codewords[0].size();
@@ -190,26 +183,97 @@ Chromosome::~Chromosome(){
 }
 
 
-double Chromosome::computeFitnessValue(){
-    // convert genes to a matrix
+void Chromosome::updateMatrix(){
     for(int i = 0 ; i < v; ++i){
         for(int j = 0; j < h; ++j){
             matrix.setElement(i, j, mat[i][j]);
         }
     }
+}
+
+double Chromosome::computeFitnessValue(){
+    // convert genes to a matrix
+    updateMatrix(); 
 
     a = 0.2;
     b = 1;
-    r = 1;
-    d = 5;
+    r = 5;
+    d = 40;
     fitness_val = 0;
     // fit += a*
-
-    fitness_val += b*countingDepth(matrix);
-    fitness_val += r*correctionDepth(matrix);
-    fitness_val += d*(1/log10(minimumDistance(matrix) + 1e-10));
+    Matrix optimizedMat = matrixOptimization(matrix);
+    // Matrix optimizedMat = matrix;
+    fitness_val += b*countingDepth(optimizedMat);
+    fitness_val += r*correctionDepth(optimizedMat);
+    fitness_val += d*(1/log10(minimumDistance(optimizedMat) + 1e-10));
 
     return fitness_val;
+}
+
+vector<int> Chromosome::twoDimensionCycleRand(int lb, int ub){
+    int rnd1 = random(lb, ub);
+    int rnd2 = random(lb, ub, rnd1);
+
+    rnd2 += ub*(rnd2 < rnd1);
+    vector<int> nums;
+    for(int i = rnd1; i < rnd2; ++i) nums.push_back(i % ub);
+
+    return nums;
+}
+
+void Chromosome::crossover(const Chromosome & p1, const Chromosome & p2, Chromosome & o1, Chromosome & o2){
+    o1 = p1;
+    o2 = p2;
+
+    int v = p1.v, h = p1.h;
+
+    vector<int> rows = twoDimensionCycleRand(0, v);
+    vector<int> cols = twoDimensionCycleRand(0, h);
+
+    // cout <<"new crossover is called" << endl;
+    for(unsigned int i = 0; i < rows.size(); ++i){
+        for(unsigned int j = 0; j < cols.size(); ++j){
+            o2.mat[rows[i]][cols[j]] = p1.mat[rows[i]][cols[j]];
+            o1.mat[rows[i]][cols[j]] = p2.mat[rows[i]][cols[j]];
+        }
+    }
+}
+
+void Chromosome::mutation(const Chromosome &p, Chromosome & o){
+    int v = p.v, h = p.h;
+    o = p;
+
+    // cout <<"new mutation is called" << endl;
+    vector<int> rows = twoDimensionCycleRand(0, v);
+    vector<int> cols = twoDimensionCycleRand(0, h);
+
+    for(unsigned int i = 0; i < rows.size(); ++i){
+        for(unsigned int j = 0; j < cols.size(); ++j){
+            o.mat[rows[i]][cols[j]] = p.mat[rows[i]][cols[j]] ^1; // flip the bit
+        }
+    }
+}
+
+
+Chromosome & Chromosome::operator=(const Chromosome &other){
+    // cout << "Chromosome operator= is called" << endl;
+    if (this == &other) return *this;
+
+    ChromosomeBase::operator=(other);
+
+    if(other.v != this->v){
+        if(this->mat != nullptr){
+            delete[] this->mat;
+        } 
+        this->mat = new int*[this->v];
+        for(int i = 0; i < v; ++i){
+            this->mat[i] = genes + h*i;
+        }
+        this->v = other.v;
+        this->h = other.h;
+    }
+
+    return *this;
 }
 
 
@@ -389,7 +453,7 @@ Chromosome GeneticAlgorithm::run(int iterations){
     // }
 
 
-    for(int i = 0; i < 100; ++i){
+    for(int i = 0; i < iterations; ++i){
         // crossover
         vector<Chromosome *> crsv_ofsprg = crossover();
         vector<Chromosome *> mut_ofsprg = mutation();
@@ -424,19 +488,20 @@ Chromosome GeneticAlgorithm::run(int iterations){
 
         // cout << "population size: "<< population.size() << endl;
         // cout << "available ofs: " << available_offspring.size()  << endl;
-        cout << "best fitness value: " <<  elites[0]->fitnessValue() << endl;
+        cout << i << ": " <<  elites[0]->fitnessValue() << endl;
     }
-    // for(int i = 0; i < population.size(); ++i){
-    //     cout << i << ": " << population[i]->fitnessValue() << endl;
-    // }
-    // Matrix matrix = population[0]->matrixForm();
-    // cout << matrix.print() << endl;
-    // int distance = minimumDistance(matrix);
-    // cout << "minimum distance : " << distance << endl;
+    Matrix original = population[0]->matrixForm();
+    Matrix matrix = matrixOptimization(original);
+    cout << "original:\n" << original.print() << endl;
+    cout << matrix.print() << endl;
+    cout << rref(matrix).print() << endl;
+    int distance = minimumDistance(matrix);
+    cout << "minimum distance : " << distance << endl;
+    cout << "counting depth: " << countingDepth(matrix)<< endl;
+    cout << "correction depth: " << correctionDepth(matrix) << endl;
 
-    for(int i = 0; i < population.size(); ++i){
-        cout << i << ": " << population[i]->computeFitnessValue() << endl;
-    }
+    Matrix generator_matrix = nullSpace(rref(matrix));
+    cout << generator_matrix.print() << endl;
     return *population[0];
 }
 

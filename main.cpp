@@ -60,14 +60,32 @@ int main(){
     // cout << "correction depth: " << correctionDepth(m) << endl; 
     // cout << (sizeof(int) <<3) << endl;
 
-    srand(time(NULL));
+    // srand(time(NULL));
 
-    GeneticAlgorithm ga(100, 10, 20, 0.8, 0.2, 0.2, 0.8);
-    ga.run(5000);
+    GeneticAlgorithm ga(150, 7, 13, 0.8, 0.2, 0.2, 0.8);
+    ga.run(2000);
+    // Matrix pmat({{1, 0, 0, 0, 0, 1, 1}, {0, 0, 1, 0, 0, 0, 0}, {1, 1, 0, 0, 1, 0, 0}, {0, 1, 0, 1, 0, 0, 1}});
+    // Matrix pmat2 = matrixOptimization(pmat);
+    // int dist1 = minimumDistance(pmat);
+    // int dist2 = minimumDistance(pmat2);
+    // cout << "minimum distance1: " << dist1 << endl;
+    // cout << "minimum distance2: " << dist2 << endl;
 
-    // Matrix pmat({{1, 0, 0, 1, 0, 1, 1}, {0, 1, 0, 1, 1, 0, 1}, {0, 0, 1, 0, 1, 1, 1}});
-    // Matrix pmat({{1, 1, 0}, {0, 1, 1}});
-    // int min_d = minimumDistance(pmat);
-    // cout << "min d: "<< min_d << endl;
+    // vector<vector<int> > codeword1 = codewords(nullSpace(rref(pmat)));
+    // vector<vector<int> > codeword2 = codewords(nullSpace(rref(pmat2)));
+
+    // Matrix cwd_mat1(codeword1);
+    // Matrix cwd_mat2(codeword2);
+
+    // cout << cwd_mat1.print() << endl;
+    // cout << cwd_mat2.print() << endl;
+    
+
+    // printf("countingDepth(p1, p2) = (%d, %d)\n", countingDepth(pmat), countingDepth(pmat2));
+    // printf("CorrectionDepth(p1, p2) = (%d, %d)\n", correctionDepth(pmat), correctionDepth(pmat2));
+
+    // cout << "pmat 1 : \n" << rref(pmat).print() << endl;
+    // cout << "pmat 2 : \n" << rref(pmat2).print() << endl;
+
     return 0;
 }
