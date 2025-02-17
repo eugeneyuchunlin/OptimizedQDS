@@ -81,7 +81,6 @@ Matrix Matrix::operator*(const Matrix& m){
 
 Matrix rref(const Matrix& mat){
     // rearrange the vectors
-    // cout << "Hi" << endl;
     vector<vector<int> > new_mat = mat.mat;
     int max_iterations = mat.v - 1;
     for(int i = 0; i < max_iterations; ++i){
@@ -146,65 +145,72 @@ Matrix rref(const Matrix& mat){
     return result;
 }
 
-Matrix nullSpace(const Matrix& mat){
 
-    const int size = 100;
-    // bool nonzero_equations[size]{0};
-    int equations[size][size] = {{0}};
-    bool not_free_variable[size] = {0};
-    // for(int i = 0; i < size; ++i)free_variable[i] = true;
-    
+Matrix nullSpace(const Matrix& mat) {
+    if (mat.v == 0 || mat.h == 0) {
+        return Matrix(); // Handle empty matrix
+    }
 
-    for(int i = 0; i < mat.v; ++i){
-        if(mat.mat[i][i] != 0){
-            not_free_variable[i] = true;
-            for(int j = i+1; j < mat.h; ++j){
-                if(mat.mat[i][j] != 0){
-                    equations[i][j] = 1;
+    int num_rows = mat.v;
+    int num_cols = mat.h;
+
+    std::vector<int> pivot_cols;
+    std::vector<std::vector<int>> rref = mat.mat;
+
+    // Perform Gaussian elimination in GF(2)
+    int row = 0;
+    for (int col = 0; col < num_cols; ++col) {
+        int pivot_row = -1;
+        for (int i = row; i < num_rows; ++i) {
+            if (rref[i][col] == 1) {
+                pivot_row = i;
+                break;
+            }
+        }
+
+        if (pivot_row != -1) {
+            pivot_cols.push_back(col);
+            if (pivot_row != row) {
+                std::swap(rref[row], rref[pivot_row]);
+            }
+
+            for (int i = 0; i < num_rows; ++i) {
+                if (i != row && rref[i][col] == 1) {
+                    for (int j = col; j < num_cols; ++j) {
+                        rref[i][j] ^= rref[row][j]; // XOR (addition in GF(2))
+                    }
                 }
             }
-        }else{
-            // push the equation that the row has
-            int k = 0;
-            for(k = i+1; k < mat.h && mat.mat[i][k] == 0; ++k);
-            for(int j = k+1; j < mat.h; ++j){
-                if(mat.mat[i][j] != 0){
-                    equations[k][j] = 1;
-                }
-            }
-            not_free_variable[k] = true;
-        }
-    }
-    for(int i = 0; i < mat.h; ++i){
-        if(!not_free_variable[i]){
-            equations[i][i] = 1;
+            row++;
         }
     }
 
-    vector<vector<int> > nullspace;
-    bool has_nullspace = false;
-    for(int i = 0; i < mat.h; ++i){
-        has_nullspace |= !not_free_variable[i];
-        if(!not_free_variable[i]){
-            vector<int> vec;
-            for(int j = 0; j < mat.h; ++j){
-                vec.push_back(equations[j][i]);
-            }
-            nullspace.push_back(vec);
+    // Identify free variables
+    std::vector<int> free_cols;
+    for (int col = 0, pivot_index = 0; col < num_cols; ++col) {
+        if (pivot_index < pivot_cols.size() && col == pivot_cols[pivot_index]) {
+            pivot_index++;
+        } else {
+            free_cols.push_back(col);
         }
     }
-    if(!has_nullspace){
-        // add the trivial solution
-        vector<int> vec;
-        for(int i = 0; i < mat.h; ++i){
-            vec.push_back(0);
-        }
-        nullspace.push_back(vec);
-    }
-    
 
-    Matrix result(nullspace);
-    return result.transpose();
+    // Construct null space vectors
+    std::vector<std::vector<int>> nullspace;
+    for (int free_col : free_cols) {
+        std::vector<int> null_vector(num_cols, 0);
+        null_vector[free_col] = 1;
+
+        for (int i = 0, pivot_index = 0; i < num_cols; ++i) {
+            if (pivot_index < pivot_cols.size() && i == pivot_cols[pivot_index]) {
+                null_vector[i] = rref[pivot_index][free_col];
+                pivot_index++;
+            }
+        }
+        nullspace.push_back(null_vector);
+    }
+
+    return Matrix(nullspace).transpose();
 }
 
 
