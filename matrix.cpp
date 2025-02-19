@@ -2,6 +2,8 @@
 #include <iostream>
 #include <set>
 #include <unordered_set>
+#include <queue>
+#include <utility>
 
 #include "matrix.h"
 #include "common.h"
@@ -39,7 +41,7 @@ Matrix::Matrix(int v, int h){
     }
 }
 
-Matrix Matrix::transpose(){
+Matrix Matrix::transpose() const{
     Matrix m(h, v);
     for(int i = 0; i < m.v; ++i){
         for(int j = 0; j < m.h; ++j){
@@ -276,4 +278,97 @@ Matrix matrixOptimization(const Matrix & m) {
     }
 
     return newMatrix;
+}
+
+// int __cycle(const vector<vector<int> > &adj_matrix, vector<vector<bool> > path, int parent, int current, int depth){
+//     int n = adj_matrix.size();
+//     vector<int> neighbors;
+
+//     if(parent != -1){
+//         path[parent][current] = 1;
+//         path[current][parent] = 1;
+//     }
+
+//     for(int i = 0; i < n; ++i){
+//         if(adj_matrix[current][i] && !path[current][i]){
+
+//             if(neighbors[i] == start)
+
+//             // found new neighbor
+//             neighbors.push_back(i);
+//         }
+
+//     }
+
+//     for(unsigned int i = 0; i < neighbors.size(); ++i){
+
+//     }
+
+// }
+
+int _cycle(const std::vector<std::vector<int>>& adj_matrix, int start) {
+    int n = adj_matrix.size();
+    if (n == 0 || start < 0 || start >= n) return -1;
+
+    std::queue<std::pair<int, std::unordered_set<int>>> q; // Queue: (node, path)
+    q.push({start, {start}}); // Start with initial node and its path
+
+    while (!q.empty()) {
+        int current_node = q.front().first;
+        std::unordered_set<int> current_path = q.front().second;
+        q.pop();
+
+        for (int neighbor = 0; neighbor < n; ++neighbor) {
+            if (adj_matrix[current_node][neighbor]) {
+                if (neighbor == start && current_path.size() > 2) {
+                    return current_path.size(); // Cycle found
+                }
+                if (current_path.find(neighbor) == current_path.end()) {
+                    std::unordered_set<int> new_path = current_path;
+                    new_path.insert(neighbor);
+                    q.push({neighbor, new_path});
+                }
+            }
+        }
+    }
+    return -1; // No cycle found
+}
+
+int girth(const Matrix & mat){
+
+    // We represent the graph in an adjancy matrix. The size of the matrix is (# variable nodes, #check nodes)
+    // # number of variable nodes = mat.h
+    // # check nodes = mat.v 
+    Matrix tanner_graph(mat.v + mat.h, mat.v + mat.h);
+    Matrix transposed = mat.transpose();
+
+    for(int i = 0; i < mat.v; ++i)
+        for(int j = 0; j < mat.h; ++j)
+            tanner_graph.mat[i][j + mat.v] = mat.mat[i][j];
+
+    vector<int> nodes; 
+    for(int i = 0; i < mat.h; ++i){
+        int row_weight = 0;
+        for(int j = 0; j < mat.v; ++j){
+            tanner_graph.mat[i+mat.v][j] = transposed.mat[i][j];
+            row_weight += transposed.mat[i][j];
+        }
+        if(row_weight > 1) nodes.push_back(i+mat.v);
+    }
+    // cout << tanner_graph.print() << endl;
+    // cout << mat.print() << endl;
+    int _girth = numeric_limits<int>::max();
+    bool found_flag = false;
+    for(unsigned int i = 0; i < nodes.size(); ++i){
+        int cycle = _cycle(tanner_graph.mat, nodes[i]);
+        if(cycle > 0 && cycle < _girth){
+            _girth = cycle;
+            found_flag = true;
+        }
+    ///     cout << "cycle of " << nodes[i] - mat.v << ": " << cycle << endl;
+
+        if(_girth == 4) return 4;
+    }
+
+    return found_flag ? _girth : -1;
 }

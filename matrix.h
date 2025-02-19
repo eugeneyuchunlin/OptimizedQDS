@@ -33,7 +33,7 @@ public:
         }
     }
     
-    Matrix transpose();
+    Matrix transpose() const;
     Matrix operator*(const Matrix& mat);
 
     string print() const;
@@ -46,11 +46,13 @@ public:
     friend int correctionDepth(const Matrix &mat);
     friend vector<int> degree(const Matrix &mat);
     friend Matrix matrixOptimization(const Matrix &mat);
+    friend int girth(const Matrix &mat);
 };
 
 Matrix rref(const Matrix& mat);
 Matrix nullSpace(const Matrix &mat);
 Matrix prioritizedGaussianElimination(const Matrix &mat);
 Matrix matrixOptimization(const Matrix &mat);
+int girth(const Matrix &mat);
 
 #endif

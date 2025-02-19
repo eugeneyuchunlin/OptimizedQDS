@@ -201,14 +201,21 @@ double Chromosome::computeFitnessValue(){
     a = 0.2;
     b = 1;
     r = 5;
-    d = 40;
+    d = 200;
+    int girth_parameter = 250;
     fitness_val = 0;
     // fit += a*
     // Matrix optimizedMat = matrix;
+
+    int gr = girth(optimized_matrix);
+    if(gr < 0){
+        gr = 2;
+    }
+
     fitness_val += b*countingDepth(optimized_matrix);
     fitness_val += r*correctionDepth(optimized_matrix);
-    fitness_val += d*(1/log10(minimumDistance(optimized_matrix) + 1e-10));
-
+    fitness_val += d / log10(minimumDistance(optimized_matrix) + 1e-10);
+    fitness_val += girth_parameter / log10(gr);
     return fitness_val;
 }
 
@@ -494,7 +501,8 @@ Chromosome GeneticAlgorithm::run(int iterations, vector<map<string, string> > & 
             {"fitness value", to_string(elites[0]->fitnessValue())},
             {"counting depth", to_string(countingDepth(elites[0]->optimized_matrix))},
             {"correction depth", to_string(correctionDepth(elites[0]->optimized_matrix))},
-            {"minimum distance", to_string(minimumDistance(elites[0]->optimized_matrix))}
+            {"minimum distance", to_string(minimumDistance(elites[0]->optimized_matrix))},
+            {"girth", to_string(girth(elites[0]->optimized_matrix))}
         };
 
         iteration_data.push_back(data);

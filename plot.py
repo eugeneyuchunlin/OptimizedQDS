@@ -2,20 +2,26 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import sys
 
-# Read the data
+def plotFunc(data, x_col, y_cols, xlabel, ylabel, titles):
+    fig, axes = plt.subplots(2, 3, figsize=(10, 8))  # 2x2 grid of subplots
+    axes = axes.flatten()  # Flatten to easily iterate
 
-def plotFunc(data, col1, col2, xlabel, ylabel, title):
-    plt.plot(data[col1], data[col2]) 
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    plt.title(title)
+    for ax, col, title in zip(axes, y_cols, titles):
+        ax.plot(data[x_col], data[col])
+        ax.set_title(title)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+    
+    plt.tight_layout()
     plt.show()
 
 if __name__ == '__main__':
     data = pd.read_csv(sys.argv[1])
 
-    # Plot the data
-    plotFunc(data, 'iteration', 'fitness value', 'Iteration', 'Fitness Value', 'Fitness Value vs. Iteration')
-    plotFunc(data, 'iteration', 'correction depth', 'Iteration', 'Correction Depth', 'Correction Depth vs. Iteration')
-    plotFunc(data, 'iteration', 'counting depth', 'Iteration', 'Counting Depth', 'Counting Depth vs. Iteration')
-    plotFunc(data, 'iteration', 'minimum distance', 'Iteration', 'Minimum Distance', 'Minimum Distance vs. Iteration')
+    # Define column names and titles
+    y_columns = ['fitness value', 'correction depth', 'counting depth', 'minimum distance', 'girth']
+    titles = ['Fitness Value vs. Iteration', 'Correction Depth vs. Iteration', 
+              'Counting Depth vs. Iteration', 'Minimum Distance vs. Iteration', 'Girth vs. Iteration']
+
+    # Plot data in 2x2 subplots
+    plotFunc(data, 'iteration', y_columns, 'Iteration', 'Values', titles)
