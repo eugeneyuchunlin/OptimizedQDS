@@ -51,86 +51,38 @@ void outputMatrix(const std::string& filename, Matrix& matrix) {
 
 
 int main(int argc, const char * argv[]){
-    // testMatrix({{1, 1, 0, 1, 0, 0, 1},{1, 0, 1, 0, 1, 0, 1}, {0, 1, 1, 0, 0, 1, 1}});
-    // testMatrix({{1, 0, 0}, {0, 1, 0}, {0, 0, 1}});
-    // testMatrix({{0, 0, 0}, {0, 0, 0}, {0, 0, 0}});
-    // testMatrix({{1, 1, 1}});
-    // testMatrix({{1, 0}, {0, 1}, {0, 0}});
-    // testMatrix({{1, 0, 1}, {0, 1, 1}});
-    // testMatrix({{1, 1, 0}, {0, 1, 1}, {1, 0, 1}});
-    // testMatrix({{1, 0, 1}, {0, 1, 1}, {1, 1, 0}});
-    // testMatrix({{1}, {0}, {1}});
-    // testMatrix({{0}, {0}, {0}});
-
-    // Matrix m({{1, 1, 0, 1, 0, 0, 1},{1, 0, 1, 0, 1, 0, 1}, {0, 1, 1, 0, 0, 1, 1}});
-    // Matrix m({{1, 0, 0, 0, 1, 1, 0}, {0, 1, 0, 0, 1, 0, 1}, {0, 0, 1, 0, 0, 1, 1}, {0, 0, 0, 1, 1, 1, 1}});
-    // Matrix m({{1, 0, 0}, {0, 1, 0}, {0, 0, 1}});
-    // double sparsity_val = sparsity(m);
-    // Matrix rref_mat = rref(m);
-
-    // cout << "RREF: \n" << rref_mat.print() << endl;
-
-    // double new_sparsity_val = sparsity(rref_mat);
-    // cout << "Sparsity: " << sparsity_val << endl;
-    // cout << "New Sparsity: " << new_sparsity_val << endl;
-
-    // Matrix codewords_mat(codewords(m));
-    // cout << "Codewords: \n" << codewords_mat.print() << endl;
-
-    // int minimum_d = minimumDistance(codewords(m));
-    // cout << "minimum distance: " << minimum_d << endl;
-
-    // cout << "matrix: \n" << m.print() << endl;
-    // cout << "couting depth: " << countingDepth(m) << endl;
-    // cout << "correction depth: " << correctionDepth(m) << endl; 
-    // cout << (sizeof(int) <<3) << endl;
-
     srand(time(NULL));
-// 0, 0, 0, 0, 0, 0, 0,  1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 
-// 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 
-// 0, 0, 0, 0, 0, 0, 0,  0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 
-// 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 
-// 0, 0, 0, 0, 0, 0, 0,  1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 
-// 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 
-// 0, 0, 0, 0, 0, 0, 0,  0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 
-// 
-// 1, 0, 0, 0, 1, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-// 0, 0, 0, 0, 1, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-// 0, 0, 1, 0, 0, 0, 1,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-// 0, 0, 0, 0, 0, 0, 1,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-// 0, 1, 0, 0, 1, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-// 0, 0, 0, 0, 0, 1, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-// 0, 1, 0, 0, 0, 1, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-// 0, 0, 0, 0, 0, 0, 1,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-// 0, 0, 0, 1, 1, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-// 1, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-// 0, 0, 0, 1, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-// 0, 1, 0, 0, 0, 0, 1,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-// 0, 0, 0, 0, 0, 1, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-// 0, 0, 1, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    
-    // Matrix H({
-    //     {1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0},       
-    //     {0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0},
-    //     {0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    //     {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0},
-    //     {1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0},
-    //     {0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0},
-    //     {0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0}   
-    // });
-    // int gr = girth(H);
-    // cout << "girth: " << gr << endl;
-
-    // return 0;
     if(argc < 3){
-        printf("Usage: [executable file] [v] [h]");
+        printf("Usage: [executable file] [stabilizers] [v] [h] [alpha] [beta] [gamma] [delta] [zeta] [iterations]");
         exit(-1);
     }
 
+    csv_t qcode_csv;
+    qcode_csv.read(argv[1], "r", false);
+    vector<vector<string> > data = qcode_csv.getData();
+    Matrix quantum_code(data.size(), data[0].size());
+    for(int i = 0; i < data.size(); ++i){
+        for(int j = 0; j < data[i].size(); ++j){
+            if(data[i][j] != "I"){
+                quantum_code.setElement(i, j, 1);
+            }
+        }
+    }
+
+    // cout << quantum_code.print() << endl;
+    int v = atoi(argv[2]), h = atoi(argv[3]);
+    Parameters params = {
+        .alpha = atof(argv[4]),
+        .beta = atof(argv[5]),
+        .gamma = atof(argv[6]),
+        .delta = atof(argv[7]),
+        .zeta = atof(argv[8])
+    };
+    int iterations = atoi(argv[9]);
 
     vector<map<string, string> > iteration_data;
-    GeneticAlgorithm ga(100, atoi(argv[1]), atoi(argv[2]), 0.8, 0.2, 0.2, 0.8);
-    Chromosome best_result = ga.run(500, iteration_data);
+    GeneticAlgorithm ga(quantum_code, 100, v, h, 0.8, 0.2, 0.2, 0.8, params);
+    Chromosome best_result = ga.run(iterations, iteration_data);
 
     csv_t csv;
     for(unsigned int i = 0; i < iteration_data.size(); ++i){
@@ -149,7 +101,7 @@ int main(int argc, const char * argv[]){
 
 
     string gmatrix_csv_filename = "gmatrix_" + string(argv[1]) + "_" + string(argv[2]) + ".csv";
-    Matrix gmatrix = nullSpace(rref(best_result.optimized_matrix));
+    Matrix gmatrix = nullSpace(best_result.optimized_matrix);
     outputMatrix(gmatrix_csv_filename, gmatrix);
 
 
@@ -158,6 +110,7 @@ int main(int argc, const char * argv[]){
 
     cout << "counting depth: " << countingDepth(best_result.optimized_matrix) << endl;
     cout << "correction depth: " << correctionDepth(best_result.optimized_matrix) << endl;
+    cout << "encoding cost: " << encodingDepth(gmatrix, rowWeights(quantum_code)) << endl;
     cout << "minimum distance: " << minimumDistance(best_result.optimized_matrix)  << endl;
     cout << "girth: " << girth(best_result.optimized_matrix) << endl;
 

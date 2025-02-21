@@ -19,9 +19,9 @@ if __name__ == '__main__':
     data = pd.read_csv(sys.argv[1])
 
     # Define column names and titles
-    y_columns = ['fitness value', 'correction depth', 'counting depth', 'minimum distance', 'girth']
-    titles = ['Fitness Value vs. Iteration', 'Correction Depth vs. Iteration', 
-              'Counting Depth vs. Iteration', 'Minimum Distance vs. Iteration', 'Girth vs. Iteration']
+    y_columns = ['fitness value', 'correction depth', 'counting depth', 'encoding cost', 'minimum distance', 'girth']
+    titles = ['Fitness Value vs. Iteration', 'Correction Depth vs. Iteration', 'Counting Depth vs. Iteration', 
+              'Encoding vs. Iteration', 'Minimum Distance vs. Iteration', 'Girth vs. Iteration', ]
 
     # Plot data in 2x2 subplots
     plotFunc(data, 'iteration', y_columns, 'Iteration', 'Values', titles)

@@ -80,6 +80,16 @@ Matrix Matrix::operator*(const Matrix& m){
     }
 }
 
+vector<int> Matrix::getRow(int i) const {
+    return mat[i];
+}
+
+vector<int> Matrix::getColumn(int j)const {
+    vector<int> col;
+    for(int i = 0; i < v; ++i) col.push_back(mat[i][j]);
+    return col;
+}
+
 
 Matrix rref(const Matrix& mat){
     // rearrange the vectors
@@ -279,32 +289,6 @@ Matrix matrixOptimization(const Matrix & m) {
 
     return newMatrix;
 }
-
-// int __cycle(const vector<vector<int> > &adj_matrix, vector<vector<bool> > path, int parent, int current, int depth){
-//     int n = adj_matrix.size();
-//     vector<int> neighbors;
-
-//     if(parent != -1){
-//         path[parent][current] = 1;
-//         path[current][parent] = 1;
-//     }
-
-//     for(int i = 0; i < n; ++i){
-//         if(adj_matrix[current][i] && !path[current][i]){
-
-//             if(neighbors[i] == start)
-
-//             // found new neighbor
-//             neighbors.push_back(i);
-//         }
-
-//     }
-
-//     for(unsigned int i = 0; i < neighbors.size(); ++i){
-
-//     }
-
-// }
 
 int _cycle(const std::vector<std::vector<int>>& adj_matrix, int start) {
     int n = adj_matrix.size();

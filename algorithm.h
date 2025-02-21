@@ -12,6 +12,16 @@ double sparsity(const Matrix &mat);
 vector<vector<int> > codewords(const Matrix &mat);
 int minimumDistance(const vector<vector<int> > &codewords);
 int minimumDistance(const Matrix &parity_check_mat);
+int encodingDepth(const Matrix &G, const vector<int> &weights);
+vector<int> rowWeights(const Matrix &stabilizer);
+
+typedef struct{
+    double alpha;
+    double beta;
+    double gamma;
+    double delta;
+    double zeta;
+}Parameters;
 
 class Chromosome : public ChromosomeBase{
 private:
@@ -19,12 +29,13 @@ private:
 protected:
     int ** mat;
     int v, h;
-    double a, b, r, d;
 
     Matrix matrix;
+    vector<int> stabilizer_weights;
+    Parameters params;
 public:
     Chromosome():ChromosomeBase(), mat(nullptr), v(0), h(0){}
-    Chromosome(int v, int h, Initializer init=RANDOM);
+    Chromosome(vector<int> stabilizer_weights, Parameters params, int v, int h, Initializer init=RANDOM);
     Chromosome(const Chromosome &);
 
     virtual ~Chromosome();
@@ -38,6 +49,7 @@ public:
 
     Chromosome & operator=(const Chromosome & other);
     Matrix optimized_matrix;
+    Matrix generator_matrix;
 };
 
 class GeneticAlgorithm{
@@ -62,15 +74,20 @@ private:
     vector<Chromosome *> rouleteSelection();
 
     vector<Chromosome *> offspringRecycle(int num);
+
+    vector<int> quantum_code_weights;
+    Parameters params;
 public:
     GeneticAlgorithm();
     GeneticAlgorithm(
+        Matrix quantum_code,
         int initial_population_size,
         int v, int h,
         double c_rate, 
         double m_rate, 
         double e_rate, 
-        double r_rate
+        double r_rate,
+        Parameters params
     );
     ~GeneticAlgorithm(){
         for (auto *c: population){

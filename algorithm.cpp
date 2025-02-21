@@ -2,6 +2,7 @@
 #include "matrix.h"
 #include "common.h"
 
+#include <cmath>
 #include <map>
 #include <iostream>
 #include <vector>
@@ -155,26 +156,59 @@ int correctionDepth(const Matrix &mat){
     return depth;
 }
 
-Chromosome::Chromosome(const Chromosome & other): ChromosomeBase(other), h(other.h), a(other.a), b(other.b), r(other.r), d(other.d){
+int encodingDepth(const Matrix &G, const vector<int> &weights){
+    int h = G.size_h(), v = G.size_v();
+    if(h < weights.size()){
+        // size incorrect
+        throw std::runtime_error("generator matrix size does not align with the size of weights");  
+    }
+
+    int message_size = min((int)weights.size(), h);
+    int total_weight = 0;
+    for(int i = 0; i < v; ++i){
+        int wt = 0;
+        for(int j = 0; j < message_size; ++j){
+            wt += G.element(i, j) * weights[j];
+        }
+        total_weight += wt;
+    }
+    return total_weight;
+}
+
+vector<int> rowWeights(const Matrix &stabilizers){
+    vector<int> weights;
+    int vs = stabilizers.size_v();
+    for(int i = 0; i < vs; ++i){
+        int wt = weight(stabilizers.getRow(i));
+        weights.push_back(wt);
+    }
+    return weights;
+}
+
+Chromosome::Chromosome(const Chromosome & other): 
+    ChromosomeBase(other), 
+    params(other.params), 
+    v(other.v),
+    h(other.h),
+    optimized_matrix(other.generator_matrix),
+    generator_matrix(other.generator_matrix)
+{
     mat = new int*[other.v];
     v = other.v;
     for(int i = 0; i < v; ++i) mat[i] = genes + i*h;
     matrix = Matrix(v, h);
 }
 
-Chromosome::Chromosome(int v, int h, Initializer init):
+Chromosome::Chromosome(vector<int> stabilizer_weights, Parameters params, int v, int h, Initializer init):
     ChromosomeBase(v*h, init), 
-    mat(NULL), v(v), h(h), matrix(v, h)
+    mat(NULL), v(v), h(h), matrix(v, h),
+    stabilizer_weights(stabilizer_weights),
+    params(params)
 {
     mat = new int*[v];
     for(int i = 0; i < v; ++i){
         mat[i] = genes + h*i;
     } 
-
-    a = 0.2;
-    b = 0.3;
-    r = 0.2;
-    d = 0.3;
 }
 
 
@@ -192,17 +226,18 @@ void Chromosome::updateMatrix(){
         }
     }
     optimized_matrix = matrixOptimization(matrix);
+    generator_matrix = nullSpace(optimized_matrix);
 }
 
 double Chromosome::computeFitnessValue(){
     // convert genes to a matrix
     updateMatrix(); 
 
-    a = 0.2;
-    b = 1;
-    r = 5;
-    d = 200;
-    int girth_parameter = 250;
+    // a = 1;
+    // b = 1;
+    // r = 2;
+    // d = 200;
+    // int girth_parameter = 250;
     fitness_val = 0;
     // fit += a*
     // Matrix optimizedMat = matrix;
@@ -211,11 +246,13 @@ double Chromosome::computeFitnessValue(){
     if(gr < 0){
         gr = 2;
     }
-
-    fitness_val += b*countingDepth(optimized_matrix);
-    fitness_val += r*correctionDepth(optimized_matrix);
-    fitness_val += d / log10(minimumDistance(optimized_matrix) + 1e-10);
-    fitness_val += girth_parameter / log10(gr);
+    
+    
+    fitness_val += params.alpha*encodingDepth(generator_matrix, stabilizer_weights);
+    fitness_val += params.beta*countingDepth(optimized_matrix);
+    fitness_val += params.gamma*correctionDepth(optimized_matrix);
+    fitness_val += params.delta / log10(minimumDistance(optimized_matrix) + 1e-10);
+    fitness_val += params.zeta/ log10(gr);
     return fitness_val;
 }
 
@@ -294,25 +331,26 @@ GeneticAlgorithm::GeneticAlgorithm(){
 }
 
 GeneticAlgorithm::GeneticAlgorithm(
+    Matrix quantum_code,
     int initial_population_size, 
     int v, int h,
     double c_rate,
     double m_rate, 
     double e_rate, 
-    double r_rate):
+    double r_rate,
+    Parameters params):
     v(v), h(h),
     crossover_rate(c_rate),
     mutation_rate(m_rate),
     elite_rate(e_rate),
     roulete_rate(r_rate),
     chromosome_size(v*h),
-    pop_size(initial_population_size)
+    pop_size(initial_population_size),
+    params(params)
 {
-
-    
-    
+    quantum_code_weights = rowWeights(quantum_code);
     for(int i = 0 ; i < initial_population_size; ++i){
-        population.push_back(new Chromosome(v, h));
+        population.push_back(new Chromosome(quantum_code_weights, params, v, h));
     }
 }
 
@@ -327,7 +365,7 @@ vector<Chromosome *> GeneticAlgorithm::offspringRecycle(int num){
     }
 
     for(unsigned int i = ready_to_use.size(); i < num; ++i){
-        ready_to_use.push_back(new Chromosome(v, h, RANDOM)); 
+        ready_to_use.push_back(new Chromosome(quantum_code_weights, params, v, h, RANDOM)); 
     }
 
     return ready_to_use;
@@ -502,7 +540,8 @@ Chromosome GeneticAlgorithm::run(int iterations, vector<map<string, string> > & 
             {"counting depth", to_string(countingDepth(elites[0]->optimized_matrix))},
             {"correction depth", to_string(correctionDepth(elites[0]->optimized_matrix))},
             {"minimum distance", to_string(minimumDistance(elites[0]->optimized_matrix))},
-            {"girth", to_string(girth(elites[0]->optimized_matrix))}
+            {"girth", to_string(girth(elites[0]->optimized_matrix))},
+            {"encoding cost", to_string(encodingDepth(elites[0]->generator_matrix, quantum_code_weights))}
         };
 
         iteration_data.push_back(data);

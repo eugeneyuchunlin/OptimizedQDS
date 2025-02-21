@@ -32,7 +32,8 @@ public:
             mat[i][j] = val;
         }
     }
-    
+    vector<int> getRow(int) const;
+    vector<int> getColumn(int) const;
     Matrix transpose() const;
     Matrix operator*(const Matrix& mat);
 

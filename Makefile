@@ -1,7 +1,7 @@
 
 CXX := g++
 
-CXXFLAGS := -Wall -Wextra -std=c++17 -O3
+CXXFLAGS := -Wall -Wextra -std=c++17 -g -O0
 SRC := generator.cpp expression.cpp matrix.cpp algorithm.cpp genetic.cpp csv.cpp infra.cpp info.cpp
 OBJ := $(SRC:.cpp=.o)
 TARGET := main
