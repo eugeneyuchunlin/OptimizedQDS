@@ -52,7 +52,7 @@ void outputMatrix(const std::string& filename, Matrix& matrix) {
 
 int main(int argc, const char * argv[]){
     srand(time(NULL));
-    if(argc < 3){
+    if(argc < 10){
         printf("Usage: [executable file] [stabilizers] [v] [h] [alpha] [beta] [gamma] [delta] [zeta] [iterations]");
         exit(-1);
     }
@@ -89,18 +89,18 @@ int main(int argc, const char * argv[]){
         csv.addData(iteration_data[i]);
     }
 
-    string filename = "output_" + string(argv[1]) + "_" + string(argv[2]) + ".csv";
+    string filename = "output_" + to_string(v) + "_" + to_string(h) + ".csv";
     csv.write(filename, "w");
 
     best_result.updateMatrix();
     Matrix matrix(best_result.matrixForm());
 
      
-    string pmatrix_csv_filename = "pmatrix_" + string(argv[1]) + "_" + string(argv[2]) + ".csv";
+    string pmatrix_csv_filename = "pmatrix_" + to_string(v) + "_" + to_string(h) + ".csv";
     outputMatrix(pmatrix_csv_filename, best_result.optimized_matrix);
 
 
-    string gmatrix_csv_filename = "gmatrix_" + string(argv[1]) + "_" + string(argv[2]) + ".csv";
+    string gmatrix_csv_filename = "gmatrix_" + to_string(v) + "_" + to_string(h) + ".csv";
     Matrix gmatrix = nullSpace(best_result.optimized_matrix);
     outputMatrix(gmatrix_csv_filename, gmatrix);
 

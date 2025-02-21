@@ -2,7 +2,6 @@
 #include "matrix.h"
 #include "common.h"
 
-#include <cmath>
 #include <map>
 #include <iostream>
 #include <vector>
@@ -185,25 +184,17 @@ vector<int> rowWeights(const Matrix &stabilizers){
     return weights;
 }
 
-Chromosome::Chromosome(const Chromosome & other): 
-    ChromosomeBase(other), 
-    params(other.params), 
-    v(other.v),
-    h(other.h),
-    optimized_matrix(other.generator_matrix),
-    generator_matrix(other.generator_matrix)
-{
+Chromosome::Chromosome(const Chromosome & other): ChromosomeBase(other), h(other.h){
     mat = new int*[other.v];
     v = other.v;
     for(int i = 0; i < v; ++i) mat[i] = genes + i*h;
     matrix = Matrix(v, h);
+    params = other.params;
 }
 
-Chromosome::Chromosome(vector<int> stabilizer_weights, Parameters params, int v, int h, Initializer init):
+Chromosome::Chromosome(vector<int> & stabilizer_weights, Parameters & params, int v, int h, Initializer init):
     ChromosomeBase(v*h, init), 
-    mat(NULL), v(v), h(h), matrix(v, h),
-    stabilizer_weights(stabilizer_weights),
-    params(params)
+    mat(NULL), v(v), h(h), matrix(v, h), params(&params), stabilizer_weights(&stabilizer_weights)
 {
     mat = new int*[v];
     for(int i = 0; i < v; ++i){
@@ -233,26 +224,17 @@ double Chromosome::computeFitnessValue(){
     // convert genes to a matrix
     updateMatrix(); 
 
-    // a = 1;
-    // b = 1;
-    // r = 2;
-    // d = 200;
-    // int girth_parameter = 250;
     fitness_val = 0;
-    // fit += a*
-    // Matrix optimizedMat = matrix;
 
     int gr = girth(optimized_matrix);
     if(gr < 0){
         gr = 2;
     }
-    
-    
-    fitness_val += params.alpha*encodingDepth(generator_matrix, stabilizer_weights);
-    fitness_val += params.beta*countingDepth(optimized_matrix);
-    fitness_val += params.gamma*correctionDepth(optimized_matrix);
-    fitness_val += params.delta / log10(minimumDistance(optimized_matrix) + 1e-10);
-    fitness_val += params.zeta/ log10(gr);
+    fitness_val += params->alpha*encodingDepth(generator_matrix, *stabilizer_weights);
+    fitness_val += params->beta*countingDepth(optimized_matrix);
+    fitness_val += params->gamma*correctionDepth(optimized_matrix);
+    fitness_val += params->delta / log10(minimumDistance(optimized_matrix) + 1e-10);
+    fitness_val += params->zeta / log10(gr);
     return fitness_val;
 }
 
@@ -318,6 +300,7 @@ Chromosome & Chromosome::operator=(const Chromosome &other){
         this->v = other.v;
         this->h = other.h;
     }
+    params = other.params;
 
     return *this;
 }
@@ -331,14 +314,15 @@ GeneticAlgorithm::GeneticAlgorithm(){
 }
 
 GeneticAlgorithm::GeneticAlgorithm(
-    Matrix quantum_code,
+    Matrix stabilizers,
     int initial_population_size, 
     int v, int h,
     double c_rate,
     double m_rate, 
     double e_rate, 
     double r_rate,
-    Parameters params):
+    Parameters params
+    ):
     v(v), h(h),
     crossover_rate(c_rate),
     mutation_rate(m_rate),
@@ -348,9 +332,10 @@ GeneticAlgorithm::GeneticAlgorithm(
     pop_size(initial_population_size),
     params(params)
 {
-    quantum_code_weights = rowWeights(quantum_code);
+
+    stabilizer_weights = rowWeights(stabilizers); 
     for(int i = 0 ; i < initial_population_size; ++i){
-        population.push_back(new Chromosome(quantum_code_weights, params, v, h));
+        population.push_back(new Chromosome(stabilizer_weights, params, v, h));
     }
 }
 
@@ -365,7 +350,7 @@ vector<Chromosome *> GeneticAlgorithm::offspringRecycle(int num){
     }
 
     for(unsigned int i = ready_to_use.size(); i < num; ++i){
-        ready_to_use.push_back(new Chromosome(quantum_code_weights, params, v, h, RANDOM)); 
+        ready_to_use.push_back(new Chromosome(this->stabilizer_weights, params, v, h, RANDOM)); 
     }
 
     return ready_to_use;
@@ -521,27 +506,22 @@ Chromosome GeneticAlgorithm::run(int iterations, vector<map<string, string> > & 
         // for(int j = 0; j < elites.size(); ++j){
         //     cout << j << ": " << elites[j]->fitnessValue() << endl;
         // }
+
         
         vector<Chromosome *> roulette_result = rouleteSelection();
         population.clear();
         for(int j = 0; j < elites.size(); ++j) population.push_back(elites[j]);
         for(int j = 0; j < roulette_result.size(); ++j) population.push_back(roulette_result[j]);
 
-        // cout << "population size: "<< population.size() << endl;
-        // cout << "available ofs: " << available_offspring.size()  << endl;
-        // cout << i << "," <<  elites[0]->fitnessValue() 
-        //           << "," << countingDepth(elites[0]->optimized_matrix) 
-        //           << "," << correctionDepth(elites[0]->optimized_matrix)  
-        //           << "," << minimumDistance(elites[0]->optimized_matrix)<< endl;
         cout << "iteration " << i << endl;
         map<string, string> data = {
             {"iteration", to_string(i)},
             {"fitness value", to_string(elites[0]->fitnessValue())},
             {"counting depth", to_string(countingDepth(elites[0]->optimized_matrix))},
             {"correction depth", to_string(correctionDepth(elites[0]->optimized_matrix))},
+            {"encoding cost", to_string(encodingDepth(elites[0]->generator_matrix, stabilizer_weights))},
             {"minimum distance", to_string(minimumDistance(elites[0]->optimized_matrix))},
-            {"girth", to_string(girth(elites[0]->optimized_matrix))},
-            {"encoding cost", to_string(encodingDepth(elites[0]->generator_matrix, quantum_code_weights))}
+            {"girth", to_string(girth(elites[0]->optimized_matrix))}
         };
 
         iteration_data.push_back(data);

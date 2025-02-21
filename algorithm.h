@@ -31,11 +31,10 @@ protected:
     int v, h;
 
     Matrix matrix;
-    vector<int> stabilizer_weights;
-    Parameters params;
+    vector<int> *stabilizer_weights;
 public:
-    Chromosome():ChromosomeBase(), mat(nullptr), v(0), h(0){}
-    Chromosome(vector<int> stabilizer_weights, Parameters params, int v, int h, Initializer init=RANDOM);
+    Chromosome():ChromosomeBase(), mat(nullptr), v(0), h(0), params(nullptr){}
+    Chromosome(vector<int> & stabilizer_weights, Parameters & params, int v, int h, Initializer init=RANDOM);
     Chromosome(const Chromosome &);
 
     virtual ~Chromosome();
@@ -50,6 +49,8 @@ public:
     Chromosome & operator=(const Chromosome & other);
     Matrix optimized_matrix;
     Matrix generator_matrix;
+
+    Parameters * params;
 };
 
 class GeneticAlgorithm{
@@ -74,13 +75,13 @@ private:
     vector<Chromosome *> rouleteSelection();
 
     vector<Chromosome *> offspringRecycle(int num);
-
-    vector<int> quantum_code_weights;
+    
+    vector<int> stabilizer_weights; 
     Parameters params;
 public:
     GeneticAlgorithm();
     GeneticAlgorithm(
-        Matrix quantum_code,
+        Matrix stabilizers,
         int initial_population_size,
         int v, int h,
         double c_rate, 
