@@ -2,6 +2,8 @@
 #include "matrix.h"
 #include "common.h"
 
+#include <fstream>
+#include <sstream>
 #include <map>
 #include <iostream>
 #include <vector>
@@ -202,7 +204,37 @@ Chromosome::Chromosome(vector<int> & stabilizer_weights, Parameters & params, in
     } 
 }
 
+Chromosome::Chromosome(string filename, vector<int> & stabilizer_weights, Parameters & params, int v, int h, Initializer init):
+    ChromosomeBase(v*h, init), 
+    mat(NULL), v(v), h(h), matrix(v, h), params(&params), stabilizer_weights(&stabilizer_weights)
+{
+    ifstream file(filename);
+    vector<vector<int>> matrix;
+    string line;
 
+    while (getline(file, line)) {
+        vector<int> row;
+        stringstream ss(line);
+        string value;
+
+        while (getline(ss, value, ',')) {
+            row.push_back(stoi(value));
+        }
+        matrix.push_back(row);
+    }
+
+    file.close();
+
+
+    mat = new int*[v];
+    for(int i = 0; i < v; ++i){
+        mat[i] = genes + h*i;
+        for(int j = 0; j < h; ++j){
+            mat[i][j] = matrix.at(i).at(j);
+        }
+    } 
+
+}
 
 Chromosome::~Chromosome(){
     delete[] mat;
@@ -230,11 +262,11 @@ double Chromosome::computeFitnessValue(){
     if(gr < 0){
         gr = 2;
     }
-    fitness_val += params->alpha*encodingDepth(generator_matrix, *stabilizer_weights);
-    fitness_val += params->beta*countingDepth(optimized_matrix);
-    fitness_val += params->gamma*correctionDepth(optimized_matrix);
-    fitness_val += params->delta / log10(minimumDistance(optimized_matrix) + 1e-10);
-    fitness_val += params->zeta / log10(gr);
+    // fitness_val += params->alpha*encodingDepth(generator_matrix, *stabilizer_weights);
+    // fitness_val += params->beta*countingDepth(optimized_matrix);
+    // fitness_val += params->gamma*correctionDepth(optimized_matrix);
+    fitness_val += params->delta / log10(minimumDistance(matrix) + 1e-10);
+    fitness_val += params->zeta / pow(log10(gr), 8);
     return fitness_val;
 }
 
@@ -321,7 +353,8 @@ GeneticAlgorithm::GeneticAlgorithm(
     double m_rate, 
     double e_rate, 
     double r_rate,
-    Parameters params
+    Parameters params,
+    vector<string> injection_files
     ):
     v(v), h(h),
     crossover_rate(c_rate),
@@ -334,7 +367,15 @@ GeneticAlgorithm::GeneticAlgorithm(
 {
 
     stabilizer_weights = rowWeights(stabilizers); 
-    for(int i = 0 ; i < initial_population_size; ++i){
+
+    int number_of_files = injection_files.size();
+    int number_of_random_population = initial_population_size - number_of_files;
+
+    for(int i = 0; i < number_of_files; ++i){
+        population.push_back(new Chromosome(injection_files[i], stabilizer_weights, params, v, h));
+    }
+
+    for(int i = 0 ; i < number_of_random_population; ++i){
         population.push_back(new Chromosome(stabilizer_weights, params, v, h));
     }
 }
@@ -476,6 +517,13 @@ vector<Chromosome *> GeneticAlgorithm::rouleteSelection(){
     return next_gen;
 }
 
+void GeneticAlgorithm::populationInjection(vector<Chromosome *> pop){
+    int size = min(pop.size(), population.size());
+    for(int i = 0; i < size; ++i){
+        *population[i] = *pop[i]; 
+    }
+}
+
 
 Chromosome GeneticAlgorithm::run(int iterations, vector<map<string, string> > & iteration_data){
 
@@ -523,7 +571,7 @@ Chromosome GeneticAlgorithm::run(int iterations, vector<map<string, string> > & 
             {"minimum distance", to_string(minimumDistance(elites[0]->optimized_matrix))},
             {"girth", to_string(girth(elites[0]->optimized_matrix))}
         };
-
+        cout << "fitness value " << elites[0]->fitnessValue() << " girth : " << girth(elites[0]->optimized_matrix) << endl;
         iteration_data.push_back(data);
     }
     return *population[0];

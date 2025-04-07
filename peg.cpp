@@ -2,41 +2,12 @@
 #include <vector>
 #include <unordered_set>
 #include <algorithm>
+#include "peg.h"
+
+
 using namespace std;
 
 
-enum NodeType{
-    SYMBOL, CHECK
-};
-
-class Node{
-private:
-    vector<Node *> neighbors; 
-    const int idx;
-public:
-
-    const NodeType type;
-    Node(NodeType type, int idx) : type(type), idx(idx) {}
-    int degree() const { return neighbors.size(); }
-    vector<Node *> getNeighbors() {return neighbors; }
-    void addNeighbor(Node* node) { 
-        printf("(%s:%d, %s:%d)\n", type==SYMBOL?"S" : "C", idx, type==SYMBOL?"S" : "C", node->idx);     
-        neighbors.push_back(node); 
-    }
-    const int index() { return idx; }
-};
-
-typedef struct{
-    vector<vector<Node *> > level_nodes;
-    unordered_set<Node *> tree_nodes;
-}Subgraph;
-
-template<typename T>
-void vectorAppend(vector<T> &src, vector<T> other){
-    for(unsigned int i = 0; i < other.size(); ++i){
-        src.push_back(other[i]);
-    }
-}
 
 int expansion(Node *node, vector<Node *> checks){
     bool stop_criteria = false;
@@ -109,41 +80,41 @@ void progressiveEdgeGrowthAlgorithm(vector<Node *> symbol_nodes, vector<Node *> 
     }
 }
 
-int main(){
-    int n = 8, m = 4;
-    vector<int> degrees = {2, 2, 2, 2, 2, 2, 2, 2};
+// int main(){
+//     int n = 8, m = 4;
+//     vector<int> degrees = {2, 2, 2, 2, 2, 2, 2, 2};
 
 
 
-    vector<Node *> symbol_nodes;
-    vector<Node *> check_nodes;
+//     vector<Node *> symbol_nodes;
+//     vector<Node *> check_nodes;
 
-    for(int i = 0; i < n; ++i) symbol_nodes.push_back(new Node(SYMBOL, i));
-    for(int i = 0; i < m; ++i) check_nodes.push_back(new Node(CHECK, i));
-    progressiveEdgeGrowthAlgorithm(symbol_nodes, check_nodes, degrees);
+//     for(int i = 0; i < n; ++i) symbol_nodes.push_back(new Node(SYMBOL, i));
+//     for(int i = 0; i < m; ++i) check_nodes.push_back(new Node(CHECK, i));
+//     progressiveEdgeGrowthAlgorithm(symbol_nodes, check_nodes, degrees);
 
 
-    vector<vector<int> > matrix;
-    for(int i = 0; i < m; ++i){
-        matrix.push_back(vector<int>());
-        for(int j = 0; j < n; ++j){
-            matrix[i].push_back(0);
-        }
-    }
+//     vector<vector<int> > matrix;
+//     for(int i = 0; i < m; ++i){
+//         matrix.push_back(vector<int>());
+//         for(int j = 0; j < n; ++j){
+//             matrix[i].push_back(0);
+//         }
+//     }
 
-    for(unsigned int i = 0; i < symbol_nodes.size(); ++i){
-        printf("Symbol[%d]:\n", symbol_nodes[i]->index());
-        for(unsigned int j = 0; j < symbol_nodes[i]->degree(); ++j){
-            int index = symbol_nodes[i]->getNeighbors()[j]->index();
-            printf("\tCheck[%d]\n", index);
-            matrix[index][symbol_nodes[i]->index()] = 1;
-        }
-    }
+//     for(unsigned int i = 0; i < symbol_nodes.size(); ++i){
+//         printf("Symbol[%d]:\n", symbol_nodes[i]->index());
+//         for(unsigned int j = 0; j < symbol_nodes[i]->degree(); ++j){
+//             int index = symbol_nodes[i]->getNeighbors()[j]->index();
+//             printf("\tCheck[%d]\n", index);
+//             matrix[index][symbol_nodes[i]->index()] = 1;
+//         }
+//     }
 
-    for(int i = 0; i < m; ++i){
-        for(int j = 0; j < n; ++j){
-            cout << matrix[i][j] << " ";
-        }
-        cout << endl;
-    }
-}
+//     for(int i = 0; i < m; ++i){
+//         for(int j = 0; j < n; ++j){
+//             cout << matrix[i][j] << " ";
+//         }
+//         cout << endl;
+//     }
+// }

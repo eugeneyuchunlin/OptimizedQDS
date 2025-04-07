@@ -15,5 +15,8 @@ dependency: $(OBJ)
 all: dependency
 	$(CXX) $(CXXFLAGS) main.cpp $(OBJ) -o $(TARGET)
 
+matrix: dependency
+	$(CXX) $(CXXFLAGS) matrix_calculation.cpp $(OBJ) -o matrix
+
 clean:
-	rm -rf $(OBJ) $(TARGET)
+	rm -rf $(OBJ) $(TARGET) matrix

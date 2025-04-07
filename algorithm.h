@@ -35,6 +35,7 @@ protected:
 public:
     Chromosome():ChromosomeBase(), mat(nullptr), v(0), h(0), params(nullptr){}
     Chromosome(vector<int> & stabilizer_weights, Parameters & params, int v, int h, Initializer init=RANDOM);
+    Chromosome(string filename, vector<int> & stabilizer_weights, Parameters & params, int v, int h, Initializer init=RANDOM);
     Chromosome(const Chromosome &);
 
     virtual ~Chromosome();
@@ -88,7 +89,8 @@ public:
         double m_rate, 
         double e_rate, 
         double r_rate,
-        Parameters params
+        Parameters params,
+        vector<string> injection_population
     );
     ~GeneticAlgorithm(){
         for (auto *c: population){
@@ -97,6 +99,7 @@ public:
         population.clear();
     }
 
+    void populationInjection(vector<Chromosome *> pop);
     Chromosome run(int iterations, vector<map<string, string> > & iteration_data);
 };
 

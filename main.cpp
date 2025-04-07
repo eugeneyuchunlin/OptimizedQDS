@@ -1,6 +1,8 @@
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <string>
+#include <csignal>
 
 #include "generator.h"
 #include "expression.h"
@@ -25,10 +27,6 @@ void testMatrix(vector<vector<int> > input){
     cout << "null space 2 : \n"<< (null_space2).print() << endl;
 }
 
-
-#include <iostream>
-#include <fstream>
-
 void outputMatrix(const std::string& filename, Matrix& matrix) {
     std::ofstream file(filename);
     
@@ -49,9 +47,21 @@ void outputMatrix(const std::string& filename, Matrix& matrix) {
     file.close();
 }
 
+int seed;
+void signal_handler(int signal_num) 
+{ 
+    cout << "The interrupt signal is (" << signal_num 
+         << "). \n"; 
+    cout << "seed: " << seed << endl;
+    exit(signal_num); 
+} 
+
 
 int main(int argc, const char * argv[]){
-    srand(time(NULL));
+    signal(SIGINT, signal_handler);
+
+    seed = time(NULL);
+    srand(seed);
     if(argc < 10){
         printf("Usage: [executable file] [stabilizers] [v] [h] [alpha] [beta] [gamma] [delta] [zeta] [iterations]");
         exit(-1);
@@ -60,7 +70,11 @@ int main(int argc, const char * argv[]){
     csv_t qcode_csv;
     qcode_csv.read(argv[1], "r", false);
     vector<vector<string> > data = qcode_csv.getData();
-    Matrix quantum_code(data.size(), data[0].size());
+    int quantum_v = data.size(), quantum_h = 0;
+    if(quantum_v){
+        quantum_h = data[0].size();
+    }
+    Matrix quantum_code(quantum_v, quantum_h);
     for(int i = 0; i < data.size(); ++i){
         for(int j = 0; j < data[i].size(); ++j){
             if(data[i][j] != "I"){
@@ -80,29 +94,31 @@ int main(int argc, const char * argv[]){
     };
     int iterations = atoi(argv[9]);
 
+
     vector<map<string, string> > iteration_data;
-    GeneticAlgorithm ga(quantum_code, 100, v, h, 0.8, 0.2, 0.2, 0.8, params);
+// rerun:
+    GeneticAlgorithm ga(quantum_code, 200, v, h, 0.8, 0.2, 0.2, 0.8, params, {"./experiments/4_10/3/pmatrix_4_10.csv"});
     Chromosome best_result = ga.run(iterations, iteration_data);
 
     csv_t csv;
     for(unsigned int i = 0; i < iteration_data.size(); ++i){
         csv.addData(iteration_data[i]);
     }
-
+    string prefix = "./output/";
     string filename = "output_" + to_string(v) + "_" + to_string(h) + ".csv";
-    csv.write(filename, "w");
+    csv.write(prefix + filename, "w");
 
     best_result.updateMatrix();
     Matrix matrix(best_result.matrixForm());
 
      
     string pmatrix_csv_filename = "pmatrix_" + to_string(v) + "_" + to_string(h) + ".csv";
-    outputMatrix(pmatrix_csv_filename, best_result.optimized_matrix);
+    outputMatrix(prefix + pmatrix_csv_filename, best_result.optimized_matrix);
 
 
     string gmatrix_csv_filename = "gmatrix_" + to_string(v) + "_" + to_string(h) + ".csv";
     Matrix gmatrix = nullSpace(best_result.optimized_matrix);
-    outputMatrix(gmatrix_csv_filename, gmatrix);
+    outputMatrix(prefix + gmatrix_csv_filename, gmatrix);
 
 
     cout << best_result.optimized_matrix.print() << endl;
@@ -112,7 +128,12 @@ int main(int argc, const char * argv[]){
     cout << "correction depth: " << correctionDepth(best_result.optimized_matrix) << endl;
     cout << "encoding cost: " << encodingDepth(gmatrix, rowWeights(quantum_code)) << endl;
     cout << "minimum distance: " << minimumDistance(best_result.optimized_matrix)  << endl;
+    int gr = girth(best_result.optimized_matrix);
     cout << "girth: " << girth(best_result.optimized_matrix) << endl;
+
+    // if(gr < 7){
+    //     goto rerun;
+    // }
 
   return 0;
 }

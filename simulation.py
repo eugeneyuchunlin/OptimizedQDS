@@ -118,17 +118,20 @@ for i in range(scenarios):
     ber_results.append(ber_result)
     fer_results.append(fer_result)
 
+lines = []
+
 plt.figure(figsize=(10, 6))
 for i in range(len(ber_results)): 
     n_k = code_config[i][0]
     n = code_config[i][1]
     k = n - n_k
     plt.plot(p_range, ber_results[i], label=f"BER [{n}, {k}]")
+    lines.append(f"[{n}, {k}]")
 
 plt.xlabel('Error Probability')
 plt.ylabel('Bit Error Rate (BER)')
 plt.yscale('log')
-plt.title('BER vs Error Probability')
+plt.title(f'BER vs. Error Probability for {" and ".join(lines)} Code')
 plt.grid(True)
 plt.legend()
 plt.show()
@@ -142,7 +145,7 @@ for i in range(len(fer_results)):
     plt.plot(p_range, fer_results[i], label=f"FER [{n}, {k}]")
 plt.xlabel('Error Probability')
 plt.ylabel('Frame Error Rate (FER)')
-plt.title('FER vs Error Probability')
+plt.title(f'FER vs. Error Probability for {" and ".join(lines)} Code')
 plt.yscale('log')
 plt.grid(True)
 plt.legend()
