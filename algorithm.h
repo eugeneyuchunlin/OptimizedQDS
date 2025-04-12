@@ -7,6 +7,7 @@
 
 #include "matrix.h"
 #include "genetic.h"
+#include "peg.h"
 
 double sparsity(const Matrix &mat);
 vector<vector<int> > codewords(const Matrix &mat);
@@ -36,6 +37,8 @@ public:
     Chromosome():ChromosomeBase(), mat(nullptr), v(0), h(0), params(nullptr){}
     Chromosome(vector<int> & stabilizer_weights, Parameters & params, int v, int h, Initializer init=RANDOM);
     Chromosome(string filename, vector<int> & stabilizer_weights, Parameters & params, int v, int h, Initializer init=RANDOM);
+    Chromosome(Matrix mat, vector<int> & stabilizer_weights, Parameters & params, int v, int h, Initializer init=RANDOM);
+
     Chromosome(const Chromosome &);
 
     virtual ~Chromosome();
@@ -90,7 +93,7 @@ public:
         double e_rate, 
         double r_rate,
         Parameters params,
-        vector<string> injection_population
+        vector<Matrix> injection_population
     );
     ~GeneticAlgorithm(){
         for (auto *c: population){
@@ -101,6 +104,18 @@ public:
 
     void populationInjection(vector<Chromosome *> pop);
     Chromosome run(int iterations, vector<map<string, string> > & iteration_data);
+};
+
+class HeuristicPEG : public PEG{
+protected:
+    Matrix _matrix;
+    virtual Node * pickup(Node * node, vector<Node *>);
+    virtual void connect(Node *symbol, Node * check);
+
+public:
+    HeuristicPEG(int v, int h, int degree);
+    HeuristicPEG(int v, int h, vector<int> degree);
+    Matrix matrix(){ return _matrix; }
 };
 
 

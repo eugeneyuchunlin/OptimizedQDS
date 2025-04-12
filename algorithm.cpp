@@ -2,6 +2,7 @@
 #include "matrix.h"
 #include "common.h"
 
+#include <utility>
 #include <fstream>
 #include <sstream>
 #include <map>
@@ -204,6 +205,21 @@ Chromosome::Chromosome(vector<int> & stabilizer_weights, Parameters & params, in
     } 
 }
 
+Chromosome::Chromosome(Matrix default_mat, vector<int> & stabilizer_weights, Parameters & params, int v, int h, Initializer init):
+    ChromosomeBase(v*h, init), 
+    mat(NULL), v(v), h(h), matrix(default_mat), params(&params), stabilizer_weights(&stabilizer_weights)
+{
+    mat = new int*[v];
+    for(int i = 0; i < v; ++i){
+        mat[i] = genes + h*i;
+        for(int j = 0; j < h; ++j){
+            mat[i][j] = matrix.element(i, j);
+        }
+    } 
+
+    cout << "default matrix: " << matrix.print() << endl;
+}
+
 Chromosome::Chromosome(string filename, vector<int> & stabilizer_weights, Parameters & params, int v, int h, Initializer init):
     ChromosomeBase(v*h, init), 
     mat(NULL), v(v), h(h), matrix(v, h), params(&params), stabilizer_weights(&stabilizer_weights)
@@ -262,10 +278,11 @@ double Chromosome::computeFitnessValue(){
     if(gr < 0){
         gr = 2;
     }
-    // fitness_val += params->alpha*encodingDepth(generator_matrix, *stabilizer_weights);
-    // fitness_val += params->beta*countingDepth(optimized_matrix);
-    // fitness_val += params->gamma*correctionDepth(optimized_matrix);
-    fitness_val += params->delta / log10(minimumDistance(matrix) + 1e-10);
+    fitness_val += params->alpha*encodingDepth(generator_matrix, *stabilizer_weights);
+    fitness_val += params->beta*countingDepth(optimized_matrix);
+    fitness_val += params->gamma*correctionDepth(optimized_matrix);
+    int min_distance = minimumDistance(matrix);
+    fitness_val += params->delta *(1/floor((min_distance-1)/2) + 1/log10(pow(min_distance, 8) + 1e-10));
     fitness_val += params->zeta / pow(log10(gr), 8);
     return fitness_val;
 }
@@ -354,7 +371,7 @@ GeneticAlgorithm::GeneticAlgorithm(
     double e_rate, 
     double r_rate,
     Parameters params,
-    vector<string> injection_files
+    vector<Matrix> injection_files
     ):
     v(v), h(h),
     crossover_rate(c_rate),
@@ -577,4 +594,31 @@ Chromosome GeneticAlgorithm::run(int iterations, vector<map<string, string> > & 
     return *population[0];
 }
 
+HeuristicPEG::HeuristicPEG(int n, int m, vector<int> degree): PEG(n, m, degree), _matrix(n, m){}
+HeuristicPEG::HeuristicPEG(int v, int h, int degree): PEG(v, h, degree), _matrix(v, h){}
 
+void HeuristicPEG::connect(Node * symbol, Node * check){
+    PEG::connect(symbol, check);
+    _matrix.setElement(check->index(), symbol->index(), 1);
+}
+
+
+Node * HeuristicPEG::pickup(Node * node, vector<Node *> nodes){
+    // choose one node with the lowest cost
+    vector<pair<Node *, int> > costs;
+    Matrix tmp;
+    tmp = _matrix;
+    for(int i = 0; i < nodes.size(); ++i){
+        tmp.setElement(nodes[i]->index(), node->index(), 1);
+        int cost = countingDepth(tmp) + correctionDepth(tmp);
+        costs.push_back({nodes[i], cost});
+
+        tmp.setElement(nodes[i]->index(), node->index(), 0); // flip back
+    }
+
+    sort(costs.begin(), costs.end(), [](pair<Node *, int> p1, pair<Node *, int> p2){
+        return p1.second < p2.second;
+    });
+
+    return costs[0].first;
+}

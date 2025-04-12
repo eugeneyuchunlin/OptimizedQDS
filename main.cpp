@@ -56,6 +56,21 @@ void signal_handler(int signal_num)
     exit(signal_num); 
 } 
 
+// int main(int argc, const char * argv[]){
+// 
+//     HeuristicPEG peg(6, 12, {2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2});    
+//     peg.algorithm();
+//     
+//     cout << peg.matrix().print() << endl;
+//     
+//     int gr = girth(peg.matrix());
+//     cout <<"girth : " << gr << endl;
+// 
+//     int md = minimumDistance(peg.matrix());
+//     cout << "minimum distance: " << md << endl; 
+//     return 0;
+// }
+
 
 int main(int argc, const char * argv[]){
     signal(SIGINT, signal_handler);
@@ -94,10 +109,13 @@ int main(int argc, const char * argv[]){
     };
     int iterations = atoi(argv[9]);
 
+    HeuristicPEG peg(v, h, 2);
+    peg.algorithm();
+    Matrix m = peg.matrix();
 
     vector<map<string, string> > iteration_data;
 // rerun:
-    GeneticAlgorithm ga(quantum_code, 200, v, h, 0.8, 0.2, 0.2, 0.8, params, {"./experiments/4_10/3/pmatrix_4_10.csv"});
+    GeneticAlgorithm ga(quantum_code, 200, v, h, 0.8, 0.2, 0.2, 0.8, params, {m});
     Chromosome best_result = ga.run(iterations, iteration_data);
 
     csv_t csv;
@@ -124,6 +142,15 @@ int main(int argc, const char * argv[]){
     cout << best_result.optimized_matrix.print() << endl;
     cout << gmatrix.print() << endl;
 
+
+    Matrix rrefM = rref(m);
+    Matrix generator = nullSpace(rrefM);
+    cout << "counting depth: " << countingDepth(m) << endl;
+    cout << "correction depth: " << correctionDepth(m) << endl;
+    cout << "encoding depth: " << encodingDepth(generator, rowWeights(quantum_code)) << endl;
+    cout << "minimum distance: " << minimumDistance(m) << endl;
+    cout << "girth: " << girth(m) << endl; 
+cout << "===========================" << endl;
     cout << "counting depth: " << countingDepth(best_result.optimized_matrix) << endl;
     cout << "correction depth: " << correctionDepth(best_result.optimized_matrix) << endl;
     cout << "encoding cost: " << encodingDepth(gmatrix, rowWeights(quantum_code)) << endl;

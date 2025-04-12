@@ -7,13 +7,19 @@
 
 using namespace std;
 
+template<typename T>
+void vectorExtend(vector<T> & src, vector<T> other){
+    for(auto obj : other){
+        src.push_back(obj);
+    }
+}
 
 
-int expansion(Node *node, vector<Node *> checks){
+int PEG::expansion(Node *node, vector<Node *> checks){
     bool stop_criteria = false;
 
-    vector<Node *> current_level = {node};
-    vector<Node *> next_level;
+    vector<Node *> current_level;
+    vector<Node *> next_level = {node};
 
     unordered_set<Node *> Nset; 
     unordered_set<Node *> NsetComplement(checks.begin(), checks.end());
@@ -22,12 +28,12 @@ int expansion(Node *node, vector<Node *> checks){
 
     int lv = 0;
     while(!stop_criteria){
+        current_level = next_level;
+        next_level.clear();
+
         ++lv;
         for(unsigned int i = 0; i < current_level.size(); ++i){
-            next_level.insert(next_level.end(), 
-                current_level[i]->getNeighbors().begin(), 
-                current_level[i]->getNeighbors().end()
-            );
+            vectorExtend(next_level, current_level[i]->getNeighbors());
         }
         
         int prev_N_set_cardinality = Nset.size();
@@ -44,40 +50,62 @@ int expansion(Node *node, vector<Node *> checks){
             stop_criteria |= (prev_N_set_cardinality == Nset.size() && Nset.size() < checks.size()); // first stop criteria: N_{s_j}^l stop increasing and |N_{s_j}^l| < m
             stop_criteria |= (prev_N_set_comp_cardinality != 0 && NsetComplement.size() == 0); // second stop criteria: \bar{N_{s_j}^l != 0 && \bar{N_{s_j}^{l+1} != 0}
         }
+        
     }
     // choose one node in prevNsetComplement
     vector<Node *> complement(prevNsetComplement.begin(), prevNsetComplement.end());
-    
-    sort(complement.begin(), complement.end(), [](Node *n1, Node *n2){
-        return n1->degree() < n2->degree();
-    });
-
-    // cout << "candidates:" << endl;
-    // for(auto node: complement){
-    //     cout << "\tchecks" << node->index() << endl;
-    // }
-
-    node->addNeighbor(complement[0]);
-    complement[0]->addNeighbor(node);
+    connect(node, pickup(node, complement));
+    // node->addNeighbor(pickup(node, complement));
+    // complement[0]->addNeighbor(node);
     return 0;
 }
 
-void progressiveEdgeGrowthAlgorithm(vector<Node *> symbol_nodes, vector<Node *> check_nodes, vector<int> degrees){
+Node * PEG::pickup(Node * symbol, vector<Node *> nodes){
+    sort(nodes.begin(), nodes.end(), [](Node *n1, Node *n2){
+        if(n1->degree() < n2->degree()){
+            return true;
+        }else if(n1->degree() == n2->degree()){
+            return n1->index() < n2->index();
+        }else{
+            return false;
+        }
+    });
+    return nodes[0];
+}
+
+void PEG::connect(Node * symbol, Node * check){
+    symbol->addNeighbor(check);
+    check->addNeighbor(symbol);
+}
+
+void PEG::algorithm(){
 
     auto comparator = [](const Node* a, const Node* b) { return a->degree() < b->degree();};
-    for(int j = 0; j < symbol_nodes.size(); ++j){
-        for(int k = 0; k < degrees[j]; ++k){
+    for(int j = 0; j < _symbol_nodes.size(); ++j){
+        // cout <<"symbol: " << _symbol_nodes[j]->index() << endl;
+        for(int k = 0; k < _degree[j]; ++k){
             if (k == 0){
                 // pick a check node with the lowest degree
-                Node* picked_node = *min_element(check_nodes.begin(), check_nodes.end(), comparator); 
-
-                symbol_nodes[j]->addNeighbor(picked_node);
-                picked_node->addNeighbor(symbol_nodes[j]);
+                Node* picked_node = PEG::pickup(_symbol_nodes[j], _check_nodes);
+                connect(_symbol_nodes[j], picked_node);
             }else{
-                expansion(symbol_nodes[j], check_nodes);
+                expansion(_symbol_nodes[j], _check_nodes);
             }
         }
     }
+}
+
+void PEG::initializeNodes(){
+    for(int i = 0; i < _m; ++i) _symbol_nodes.push_back(new Node(SYMBOL, i));
+    for(int i = 0; i < _n; ++i) _check_nodes.push_back(new Node(CHECK, i));
+}
+
+PEG::PEG(int n, int m, vector<int> degree): _m(m), _n(n), _degree(degree){
+    initializeNodes();
+}
+
+PEG::PEG(int n, int m, int degree): _m(m), _n(n), _degree(m, degree){
+    initializeNodes();
 }
 
 // int main(){
